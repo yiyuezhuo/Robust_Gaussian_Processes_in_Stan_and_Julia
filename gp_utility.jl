@@ -43,9 +43,10 @@ function plot_gp_pred_quantiles(fit, data, true_realization, title)
     plot(legend=false)
     
     plot_between!(x_predict, q_list[1,:], q_list[end,:], fillcolor=colorschemes[:amp][75])
-    plot_between!(x_predict, q_list[2,:], q_list[end-1,:], fillcolor=colorschemes[:amp][125])
-    plot_between!(x_predict, q_list[3,:], q_list[end-2,:], fillcolor=colorschemes[:amp][150])
-    plot_between!(x_predict, q_list[4,:], q_list[end-3,:], fillcolor=colorschemes[:amp][175])
+    plot_between!(x_predict, q_list[2,:], q_list[end-1,:], fillcolor=colorschemes[:amp][100])
+    plot_between!(x_predict, q_list[3,:], q_list[end-2,:], fillcolor=colorschemes[:amp][125])
+    plot_between!(x_predict, q_list[4,:], q_list[end-3,:], fillcolor=colorschemes[:amp][150])
+    plot!(x_predict, q_list[5,:], linewidth=2, color=colorschemes[:amp][175])
     
     plot_base!(data, true_realization)
     
@@ -68,9 +69,10 @@ function plot_gp_quantiles(fit, data, true_realization, title)
     plot(legend=false)
     
     plot_between!(x_predict, q_list[1,:], q_list[end,:], fillcolor=colorschemes[:amp][75])
-    plot_between!(x_predict, q_list[2,:], q_list[end-1,:], fillcolor=colorschemes[:amp][125])
-    plot_between!(x_predict, q_list[3,:], q_list[end-2,:], fillcolor=colorschemes[:amp][150])
-    plot_between!(x_predict, q_list[4,:], q_list[end-3,:], fillcolor=colorschemes[:amp][175])
+    plot_between!(x_predict, q_list[2,:], q_list[end-1,:], fillcolor=colorschemes[:amp][100])
+    plot_between!(x_predict, q_list[3,:], q_list[end-2,:], fillcolor=colorschemes[:amp][125])
+    plot_between!(x_predict, q_list[4,:], q_list[end-3,:], fillcolor=colorschemes[:amp][150])
+    plot!(x_predict, q_list[5,:], linewidth=2, color=colorschemes[:amp][175])
     
     plot_base!(data, true_realization)
     
@@ -85,7 +87,20 @@ function plot_gp_realizations(fit, data, true_realization, title)
     plot!(data.x_predict, params["f_predict"][:,:,1], color=colorschemes[:amp][150], alpha=0.05)
     plot_base!(data, true_realization)
     
+    # plot_base!(data, true_realization)
+    
+    title!(title)
+end
+
+function plot_gp_pred_realizations(fit, data, true_realization, title)
+    params = extract(fit)
+    
+    plot(fmt=:png, legend=false)
+    
+    plot!(data.x_predict, params["y_predict"][:,:,1], color=colorschemes[:amp][150], alpha=0.05)
     plot_base!(data, true_realization)
+    
+    # plot_base!(data, true_realization)
     
     title!(title)
 end
