@@ -104,3 +104,76 @@ function plot_gp_pred_realizations(fit, data, true_realization, title)
     
     title!(title)
 end
+
+"""
+partition sample according to divergent, the (chain, draw) dimention is flatted.
+"""
+function partition(fit, is_div)
+    params = extract(fit)
+    # n = prod(size(params["divergent__"]))
+    n = length(is_div)
+    # is_div = vec(params["divergent__"]) .== 1
+    is_non_div = .!is_div
+    
+    div_params = Dict{String, Array}()
+    non_div_params = Dict{String, Array}()
+    
+    for (key, value) in params
+        sz = size(value)[1:end-2]
+        rv = reshape(value, prod(sz), n)
+        div_params[key] = reshape(rv[:, is_div], sz..., sum(is_div))
+        non_div_params[key] = reshape(rv[:, is_non_div], sz..., sum(is_non_div))
+    end
+    
+    div_params, non_div_params
+end
+
+function partition_div(fit)
+    params = extract(fit)
+    is_div = vec(params["divergent__"]) .== 1
+    partition(fit, is_div)
+end
+
+function partition_low_sigma(fit, p)
+    params = extract(fit)
+    is_low_sigma = vec(params["sigma"]) .< p
+    partition(fit, is_low_sigma)
+end
+
+function check_all_diagnostics(model, fit)
+    df = read_summary(model)
+    par_df = df[8:end,:]
+    params = extract(fit)
+    
+    n_iter = prod(size(params["divergent__"]))
+    
+    min_n_eff_iter_ratio = minimum(par_df["ess"]) / n_iter
+    @show min_n_eff_iter_ratio (min_n_eff_iter_ratio > 0.001)
+    
+    max_r_hat = maximum(par_df["r_hat"])
+    @show max_r_hat (max_r_hat < 1.1)
+    
+    @show sum(params["divergent__"]) mean(params["divergent__"])
+    max_treedepth = maximum(params["treedepth__"])
+    @show max_treedepth (max_treedepth < 10)
+    
+    energy = params["energy__"]
+    energy_diff = diff(energy, dims=1)
+    ebfmi = var(energy_diff) / var(energy)
+    @show ebfmi (ebfmi > 0.2)
+end
+
+function plot_low_sigma_gp_realizations(fit, data, true_realization, title)
+    params = extract(fit)
+    
+    low_params, nonlow_params = partition_low_sigma(fit, 0.5)
+    
+    plot(fmt=:png, legend=false, ylims=(-10, 10))
+    
+    plot!(data.x_predict, nonlow_params["f_predict"], legend=false, color=color=colorschemes[:bilbao][30])
+    plot!(data.x_predict, low_params["f_predict"], legend=false, color=color=colorschemes[:bilbao][250],alpha=0.05)
+    
+    plot_base!(data, true_realization)
+    
+    title!(title)
+end
